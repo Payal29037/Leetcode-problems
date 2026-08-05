@@ -1,53 +1,57 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 class Solution {
-
     public List<Integer> remainingMethods(int n, int k, int[][] invocations) {
-
-        // Build graph
-        List<Integer>[] graph = new ArrayList[n];
-        for (int i = 0; i < n; i++)
-            graph[i] = new ArrayList<>();
-
-        for (int[] edge : invocations) {
-            graph[edge[0]].add(edge[1]);
+        List<Integer>[] adj = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<>();
         }
-
-        // Mark suspicious methods
+        
+        for (int[] e : invocations) {
+            adj[e[0]].add(e[1]);
+        }
+        
         boolean[] suspicious = new boolean[n];
-        dfs(k, graph, suspicious);
 
-        // Check if any outside method calls a suspicious method
-        for (int[] edge : invocations) {
-            int u = edge[0];
-            int v = edge[1];
-
-            if (!suspicious[u] && suspicious[v]) {
-                List<Integer> ans = new ArrayList<>();
-                for (int i = 0; i < n; i++)
-                    ans.add(i);
-                return ans;
+        Queue<Integer> q = new LinkedList<>();
+        q.offer(k);
+        suspicious[k] = true;
+        
+        while (!q.isEmpty()) {
+            int u = q.poll();
+            
+            for (int v : adj[u]) {
+                if (!suspicious[v]) {
+                    suspicious[v] = true;
+                    q.offer(v);
+                }
             }
         }
-
-        // Remove suspicious methods
+        
+        for (int i = 0; i < n; i++) {
+            if (!suspicious[i]) {
+                for (int v : adj[i]) {
+                    if (suspicious[v]) {
+                        List<Integer> ans = new ArrayList<>();
+                        for (int j = 0; j < n; j++) {
+                            ans.add(j);
+                        }
+                        return ans;
+                    }
+                }
+            }
+        }
+        
         List<Integer> ans = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            if (!suspicious[i])
+            if (!suspicious[i]) {
                 ans.add(i);
+            }
         }
-
+        
         return ans;
-    }
-
-    private void dfs(int node, List<Integer>[] graph, boolean[] suspicious) {
-        if (suspicious[node])
-            return;
-
-        suspicious[node] = true;
-
-        for (int next : graph[node]) {
-            dfs(next, graph, suspicious);
-        }
     }
 }
