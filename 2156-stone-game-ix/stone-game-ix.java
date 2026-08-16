@@ -1,16 +1,8 @@
 class Solution {
     public boolean stoneGameIX(int[] stones) {
-        int zero = 0, one = 0, two = 0;
-
-        for (int x : stones) {
-            if (x % 3 == 0) zero++;
-            else if (x % 3 == 1) one++;
-            else two++;
-        }
-
-        if (zero % 2 == 0)
-            return one > 0 && two > 0;
-
-        return Math.abs(one - two) > 2;
+        int[] count=new int[3];
+for(int stone:stones)count[stone%3]++;
+if(count[0]%2==0)return count[1]>0&&count[2]>0;
+return Math.abs(count[1]-count[2])>2;
     }
 }
