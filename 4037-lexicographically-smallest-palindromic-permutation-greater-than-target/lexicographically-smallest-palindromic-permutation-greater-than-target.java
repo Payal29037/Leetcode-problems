@@ -1,138 +1,123 @@
-
 class Solution {
     public String lexPalindromicPermutation(String s, String target) {
-        int n = s.length();
-        int[] freq = new int[26];
-
-        for (char ch : s.toCharArray()) {
-            freq[ch - 'a']++;
+        int[] a = new int[26];
+        for (char ch : s.toCharArray()){
+            a[ch - 'a']++;
         }
-
-        int odd = 0;
-        int mid = -1;
-
-        for (int i = 0; i < 26; i++) {
-            if ((freq[i] & 1) == 1) {
-                odd++;
-                mid = i;
+        char mid = '.';
+        for (int i = 0; i < 26; i++){
+            if ((a[i]&1) == 1){
+                if (mid != '.')return "";
+                mid = (char) (i + (int)'a');
             }
+            a[i] /= 2;
         }
-
-        if (odd > 1) return "";
-
-        int len = n / 2;
-        int[] half = new int[26];
-
-        for (int i = 0; i < 26; i++) {
-            half[i] = freq[i] / 2;
-        }
-
-        String ans = "";
-
-        for (int i = 0; i < len; i++) {
-            int[] rem = half.clone();
-
-            boolean valid = true;
-
-            for (int j = 0; j < i; j++) {
-                int c = target.charAt(j) - 'a';
-
-                if (rem[c] == 0) {
-                    valid = false;
-                    break;
+        StringBuilder str = new StringBuilder();
+        int flag = 0;
+        for (int i = 0; i < s.length() / 2; i++){
+            char ch = target.charAt(i);
+            if (flag == 0){
+                boolean ok  = false;
+                if (a[ch - 'a'] > 0){
+                    a[ch - 'a']--;
+                    str.append(ch);
+                    continue;
                 }
-
-                rem[c]--;
-            }
-
-            if (!valid) break;
-
-            int start = target.charAt(i) - 'a' + 1;
-
-            for (int c = start; c < 26; c++) {
-                if (rem[c] == 0) continue;
-
-                rem[c]--;
-
-                StringBuilder left = new StringBuilder();
-
-                for (int j = 0; j < i; j++) {
-                    left.append(target.charAt(j));
-                }
-
-                left.append((char) ('a' + c));
-
-                for (int x = 0; x < 26; x++) {
-                    while (rem[x] > 0) {
-                        left.append((char) ('a' + x));
-                        rem[x]--;
+                for (int j = ch - 'a'; j < 26; j++){
+                    if (a[j] > 0){
+                        a[j]--;
+                        ok =true;
+                        str.append((char) (j + 'a'));
+                        break;
                     }
                 }
-
-                String candidate = palindrome(left.toString(), mid, n);
-
-                if (candidate.compareTo(target) > 0 &&
-                    (ans.isEmpty() || candidate.compareTo(ans) < 0)) {
-                    ans = candidate;
+                if (ok){
+                    flag = 1;
+                    continue;
                 }
+                for (int j = i - 1; j >= 0 && !ok; j--){
+                    for (int k = 0; k < 26; k++){
+    
+                        if (k > str.charAt(j) - 'a' && a[k] > 0){
+                            a[str.charAt(j) - 'a']++;
+                            str.setCharAt(j, (char) (k + 'a'));
+                            a[k]--;
+                            ok = true;
+                            break;
+                        }
+                    }
+                    if (ok){
+                        i = j;
+                        flag = 1;
+                        // System.out.printf("%d ", i);
+                        break;
+                    }
+                    a[str.charAt(j) - 'a']++;
+                    str.deleteCharAt(str.length() - 1);
+                }
+                if (!ok)return "";
 
-                rem = half.clone();
-
-                for (int j = 0; j < i; j++) {
-                    rem[target.charAt(j) - 'a']--;
+            }
+            else {
+                for (int j = 0; j < 26; j++){
+                    if (a[j] > 0){
+                        a[j]--;
+                        str.append((char) (j + 'a'));
+                        break;
+                    }
                 }
             }
+            
         }
+        StringBuilder con = palind(str, mid);
+        if (comp(con, new StringBuilder(target)) == 1)return con.toString();
+        next_perm(str);
+        con = palind(str, mid);
+        if (comp(con, new StringBuilder(target)) == 1)return con.toString();
+        
+        return "";
 
-        int[] need = new int[26];
-
-        for (int i = 0; i < len; i++) {
-            need[target.charAt(i) - 'a']++;
+    }
+    int comp(StringBuilder s1, StringBuilder s2){
+        for (int i = 0; i < s1.length(); i++){
+            if (s1.charAt(i) == s2.charAt(i))continue;
+            return s1.charAt(i) < s2.charAt(i) ? -1 : 1;
         }
-
-        boolean possible = true;
-
-        for (int i = 0; i < 26; i++) {
-            if (need[i] > half[i]) {
-                possible = false;
+        return 0;
+    }
+    StringBuilder palind(StringBuilder s, char mid){
+        StringBuilder con = new StringBuilder();
+        con.append(s);
+        if (mid != '.') con.append(mid);
+        s.reverse();
+        con.append(s);
+        s.reverse();
+        return con;
+    }
+    void swap(StringBuilder s, int i, int j){
+        s.setCharAt(i, (char) (s.charAt(i) ^ s.charAt(j)));
+        s.setCharAt(j, (char) (s.charAt(i) ^ s.charAt(j)));
+        s.setCharAt(i, (char) (s.charAt(i) ^ s.charAt(j)));
+    }
+    void next_perm(StringBuilder s){
+        int n = s.length();
+        int pos = -1;
+        for (int i = n -2; i >= 0; i--){
+            if (s.charAt(i) < s.charAt(i + 1)){
+                pos = i;
                 break;
             }
         }
+        if (pos == -1)return ;
+        for (int i = n - 1; i >= 0; i--){
+            if (s.charAt(i) > s.charAt(pos)){
+                swap(s, i, pos);
+                for (int j = pos + 1, r = n - 1; j < r; j++, r--){
+                    swap(s, j, r);
+                }
 
-        if (possible) {
-            String candidate = palindrome(target.substring(0, len), mid, n);
-
-            if (candidate.compareTo(target) > 0 &&
-                (ans.isEmpty() || candidate.compareTo(ans) < 0)) {
-                ans = candidate;
+                break;
             }
         }
-
-        return ans;
-    }
-
-    private void appendSorted(StringBuilder sb, int[] freq) {
-        for (int c = 0; c < 26; c++) {
-            while (freq[c] > 0) {
-                sb.append((char) ('a' + c));
-                freq[c]--;
-            }
-        }
-    }
-
-    private String palindrome(String left, int mid, int n) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(left);
-
-        if ((n & 1) == 1) {
-            sb.append((char) ('a' + mid));
-        }
-
-        for (int i = left.length() - 1; i >= 0; i--) {
-            sb.append(left.charAt(i));
-        }
-
-        return sb.toString();
     }
 }
