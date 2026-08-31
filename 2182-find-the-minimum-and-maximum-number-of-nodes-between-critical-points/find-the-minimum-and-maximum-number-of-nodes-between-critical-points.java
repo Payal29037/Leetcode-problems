@@ -1,42 +1,64 @@
 class Solution {
     public int[] nodesBetweenCriticalPoints(ListNode head) {
-        List<Integer> nums = new ArrayList<>();
+        
+        int prev=head.val;
+        int curr,next;
+        ListNode temp=head.next;
 
-        while(head != null){
-            nums.add(head.val);
-            head = head.next;
-        }
+        int mindis;
+        int maxdis;
 
-        List<Integer> criticalPoints = new ArrayList<>();
+        int firstidx=0,curridx=0,previdx=0;
 
-        int n = nums.size();
+        
 
-        for(int i = 1; i < n - 1; i++){
-            if(nums.get(i) > nums.get(i - 1) && nums.get(i) > nums.get(i + 1)){
-                criticalPoints.add(i);
+        while(temp.next!=null){
+            curr=temp.val;
+            next=temp.next.val;
+            temp=temp.next;
+            if(curr<prev && curr<next || curr>prev && curr>next ) {
+                curridx=1;
+                firstidx=1;
+                prev=curr;
+                break;
             }
-            else if(nums.get(i) < nums.get(i - 1) && nums.get(i) < nums.get(i + 1)){
-                criticalPoints.add(i);
+            prev=curr;
+        }
+
+        if(firstidx==0) return new int[]{-1,-1};
+
+        while(temp.next!=null){
+            curr=temp.val;
+            next=temp.next.val;
+            temp=temp.next;
+            curridx++;
+            if(curr<prev && curr<next || curr>prev && curr>next ) {
+                previdx=curridx;
+                prev=curr;
+                break;
             }
+            prev=curr;
         }
 
-        int m = criticalPoints.size();
+        if(previdx==0) return new int[]{-1,-1};
 
-        if(m < 2){
-            return new int[]{-1, -1};
+        mindis=maxdis=curridx-firstidx;
+
+           while(temp.next!=null){
+            curr=temp.val;
+            next=temp.next.val;
+            temp=temp.next;
+            curridx++;
+            if(curr<prev && curr<next || curr>prev && curr>next ) {
+                maxdis=curridx-firstidx;
+                if((curridx-previdx)<mindis) mindis=curridx-previdx;
+                previdx=curridx;
+               
+            }
+            prev=curr;
         }
 
-        int minDist = Integer.MAX_VALUE;
+        return new int[]{mindis,maxdis};
 
-        int maxDist = criticalPoints.get(m - 1) - criticalPoints.get(0);
-
-        for(int i = 1; i < m; i++){
-            minDist = Math.min(
-                minDist,
-                criticalPoints.get(i) - criticalPoints.get(i - 1)
-            );
-        }
-
-        return new int[]{minDist, maxDist};
     }
 }
