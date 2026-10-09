@@ -1,24 +1,33 @@
 class Solution {
     public int minInsertions(String s) {
-        int ans = 0, x = 0;
+        int openNeeded = 0;
+        int openCount = 0;
+        int i = 0;
         int n = s.length();
-        for(int i=0; i<n; ++i){
-            if (s.charAt(i) == '('){
-                ++x;
-            }else{
-                if (i < n-1 && s.charAt(i + 1) == ')'){
-                    ++i;
-                }else{
-                    ++ans;
+        char[] arr = s.toCharArray();
+        
+        while (i < n) {
+            if (arr[i] == '(') {
+                openCount++;
+                i++;
+            } else {
+                if (i + 1 < n && arr[i + 1] == ')') {
+                    i += 2; 
+                } else {
+                    openNeeded++; 
+                    i += 1;
                 }
-                if(x == 0){
-                    ++ans;
-                }else{
-                    --x;
+                
+                if (openCount > 0) {
+                    openCount--;
+                } else {
+                    openNeeded++;
                 }
             }
         }
-        ans += x << 1;
-        return ans;
+
+        openNeeded += openCount * 2;
+        
+        return openNeeded;
     }
 }
