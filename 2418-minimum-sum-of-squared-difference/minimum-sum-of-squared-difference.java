@@ -1,49 +1,32 @@
 class Solution {
     public long minSumSquareDiff(int[] nums1, int[] nums2, int k1, int k2) {
-        long k = (long) k1 + k2;
-        int n = nums1.length;
-        int[] d = new int[n + 1];
+  long[] cnt = new long[100001];   
+  int n = nums1.length;
+  long sumDiff = 0;
+  int maxDiff = 0;
+  for (int i = 0; i < n; i++) {
+      int d = Math.abs(nums1[i] - nums2[i]);
+      cnt[d]++;
+      sumDiff += d;
+      maxDiff = Math.max(maxDiff, d);
+  }
+  long chances = (long) k1 + k2;
+  if (sumDiff <= chances){ return 0; }
 
-        long total = 0;
+  for (int v = maxDiff; v >= 1 && chances > 0; v--) {
+      if (cnt[v] == 0) continue;
+      long here = cnt[v];         
+      long move = Math.min(here, chances);  
+      cnt[v] -= move;                
+      cnt[v-1] += move;              
+      chances -= move;             
+  }
 
-        for (int i = 0; i < n; i++) {
-            d[i] = Math.abs(nums1[i] - nums2[i]);
-            total += d[i];
-        }
+  long ans = 0;
+  for (int v = 1; v <= maxDiff; v++) {
+      ans += cnt[v] * (long) v * v;
+  }
+  return ans;
 
-        if (total <= k)
-            return 0;
-
-        Arrays.sort(d, 0, n);
-
-        for (int i = 0; i < n / 2; i++) {
-            int temp = d[i];
-            d[i] = d[n - 1 - i];
-            d[n - 1 - i] = temp;
-        }
-
-        d[n] = 0;
-
-        for (int i = 1; i <= n; i++) {
-            long cost = (long)(d[i - 1] - d[i]) * i;
-
-            if (cost > k) {
-                long q = k / i;
-                long r = k % i;
-                long hi = d[i - 1] - q;
-
-                long res = hi * hi * (i - r)
-                         + (hi - 1) * (hi - 1) * r;
-
-                for (int j = i; j < n; j++)
-                    res += (long)d[j] * d[j];
-
-                return res;
-            }
-
-            k -= cost;
-        }
-
-        return 0;
     }
 }
